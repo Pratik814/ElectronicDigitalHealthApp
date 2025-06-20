@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>DigitalHelath</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f5f6fa;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .card {
+      max-width: 500px;
+      margin: 30px auto;
+      background: #fff;
+      border-radius: 12px;
+      padding: 30px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .card h2 {
+      margin-top: 0;
+      text-align: center;
+    }
+
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      margin: 20px 0;
+    }
+
+    .input-group input[type="text"],
+    .input-group input[type="number"],
+    .input-group input[type="email"] {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 1em;
+    }
+
+    .gender-options label {
+      margin-right: 15px;
+    }
+
+    button {
+      width: 100%;
+      padding: 10px;
+      background-color: #4a90e2;
+      border: none;
+      border-radius: 6px;
+      color: white;
+      font-size: 1em;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    button:hover {
+      background-color: #357ac9;
+    }
+
+    #result, #searchResult {
+      text-align: center;
+      margin-top: 15px;
+      color: #333;
+    }
+
+    footer {
+      text-align: center;
+      padding: 20px;
+      margin-top: 40px;
+      background-color: #f0f0f0;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <h2>Electronic Medical Record</h2>
+    <div class="input-group">
+      <input type="text" placeholder="FirstName" id="input1" />
+      <input type="text" placeholder="LastName" id="input2" />
+      <input type="text" placeholder="Address" id="input3" />
+      <div class="gender-options">
+        <label><strong>Gender:</strong></label><br/>
+        <label><input type="radio" name="gender" value="M" /> Male</label>
+        <label><input type="radio" name="gender" value="F" /> Female</label>
+        <label><input type="radio" name="gender" value="Other" /> Other</label>
+      </div>
+      <div class="bloodgrp-options">
+        <label><strong>Blood Group:</strong></label><br/>
+        <label><input type="radio" name="blood" value="A+" /> A+</label>
+        <label><input type="radio" name="blood" value="A-" /> A-</label>
+        <label><input type="radio" name="blood" value="B+" /> B+</label>
+        <label><input type="radio" name="blood" value="B-" /> B-</label>
+        <label><input type="radio" name="blood" value="AB+" /> AB+</label>
+        <label><input type="radio" name="blood" value="AB-" /> AB-</label>
+        <label><input type="radio" name="blood" value="O+" /> O+</label>
+        <label><input type="radio" name="blood" value="O-" /> O-</label>
+      </div>
+      <button onclick="generateKey()">Generate</button>
+      <p id="result"></p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Search by Key</h2>
+    <div class="input-group">
+      <input type="text" placeholder="Enter Key" id="searchKey" />
+      <button onclick="searchKey()">Search</button>
+      <p id="searchResult"></p>
+    </div>
+  </div>
+
+  <footer>
+    © 2025 <strong>Code Blooded</strong>
+  </footer>
+
+  <script>
+    async function generateKey() {
+      const genderInput = document.querySelector('input[name="gender"]:checked');
+      const genderValue = genderInput ? genderInput.value : '';
+
+      const bloodInput = document.querySelector('input[name="blood"]:checked');
+      const bloodValue = bloodInput ? bloodInput.value : '';
+
+      const inputs = [
+        document.getElementById('input1').value.trim(),
+        document.getElementById('input2').value.trim(),
+        document.getElementById('input3').value.trim(),
+        genderValue,
+        bloodValue
+      ];
+
+      const res = await fetch('http://localhost:3000/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ inputs })
+      });
+
+      const data = await res.json();
+      document.getElementById('result').innerText = data.key ? `Generated Key: ${data.key}` : `Error: ${data.error}`;
+    }
+
+    async function searchKey() {
+       const key = document.getElementById('searchKey').value.trim();
+    const res = await fetch(`http://localhost:3000/search/${key}`);
+    const data = await res.json();
+
+    if (data.inputs) {
+      const labels = ["First Name", "Last Name", "Address", "Gender", "BloodGroup"];
+      const formatted = data.inputs.map((val, i) => `<strong>${labels[i]}:</strong> ${val}`).join('<br/>');
+      document.getElementById('searchResult').innerHTML = formatted;
+    } else {
+      document.getElementById('searchResult').innerText = `Error: ${data.error}`;
+    }
+    }
+  </script>
+</body>
+</html>
